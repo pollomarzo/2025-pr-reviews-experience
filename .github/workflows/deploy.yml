@@ -4,16 +4,29 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
+  pull-requests: write
+  deployments: write
 
 jobs:
   deploy:
-    uses: impact-scholars/isp-actions-config/.github/workflows/deploy-paper.yml@main
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    uses: impact-scholars/isp-actions-config/.github/workflows/build-and-deploy.yml@feat/pr-preview
     with:
       base_url: /${{ github.event.repository.name }}
-      # paper-environment-file: paper-environment.yml  # Optional: override if using different filename
+
+  preview:
+    if: github.event_name == 'pull_request'
+    uses: impact-scholars/isp-actions-config/.github/workflows/build-and-deploy.yml@feat/pr-preview
+    with:
+      target: cloudflare
+      base_url: /
+    secrets: inherit
