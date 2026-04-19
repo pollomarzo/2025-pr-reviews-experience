@@ -22,3 +22,6 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+
+# PR comments data (regenerated via scripts/fetch-pr-comments.mjs)
+pr-comments-data.json

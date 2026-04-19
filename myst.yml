@@ -4,6 +4,8 @@ extends:
 - https://raw.githubusercontent.com/impact-scholars/isp-actions-config/v0.1.0/climatematch-2023.yml
 
 project:
+  plugins:
+    - plugins/pr-comments.mjs
   doi: 10.5281/zenodo.12206635
   date: 2024-06-21
   authors:
