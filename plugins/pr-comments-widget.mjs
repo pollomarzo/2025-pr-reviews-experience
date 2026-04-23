@@ -109,6 +109,7 @@ async function fetchPR(repo, pr, token) {
       url: c.html_url,
       path: c.path,
       line: c.line ?? c.original_line ?? null,
+      position: c.position ?? null,
     })),
     reviews: reviews.filter(r => r.body?.trim()).map(r => ({
       id: r.id, author: r.user.login, author_avatar: r.user.avatar_url,
@@ -125,9 +126,42 @@ function showPopup(anchor, comments) {
   document.querySelector('.prc-popup')?.remove();
   const popup = document.createElement('div');
   popup.className = 'prc-popup';
-  const { bottom, right } = anchor.getBoundingClientRect();
+
+  const rect = anchor.getBoundingClientRect();
   const scrollTop = window.scrollY || document.documentElement.scrollTop;
-  popup.style.cssText = `top:${bottom + scrollTop + 6}px;right:${Math.max(window.innerWidth - right, 8)}px`;
+  const viewportH = window.innerHeight;
+  const viewportW = window.innerWidth;
+
+  const spaceBelow = viewportH - rect.bottom;
+  const spaceAbove = rect.top;
+  const minHeight = 160;
+
+  let top, maxH;
+  const placeBelow = spaceBelow >= minHeight || spaceBelow >= spaceAbove;
+
+  if (placeBelow) {
+    top = rect.bottom + scrollTop + 6;
+    maxH = Math.min(Math.floor(viewportH * 0.6), Math.max(spaceBelow - 12, minHeight));
+  } else {
+    top = rect.top + scrollTop - 6;
+    maxH = Math.min(Math.floor(viewportH * 0.6), Math.max(spaceAbove - 12, minHeight));
+    popup.classList.add('prc-popup-above');
+  }
+
+  popup.style.cssText = `top:${top}px;max-height:${maxH}px;`;
+
+  // Keep popup within horizontal viewport bounds
+  const popupWidth = Math.min(420, viewportW - 16);
+  const rightEdge = viewportW - rect.right;
+  if (rightEdge < 8 || rect.right < popupWidth + 8) {
+    popup.style.left = '8px';
+    popup.style.right = 'auto';
+    popup.style.maxWidth = `${popupWidth}px`;
+  } else {
+    popup.style.right = `${Math.max(rightEdge, 8)}px`;
+    popup.style.left = 'auto';
+    popup.style.maxWidth = `${popupWidth}px`;
+  }
 
   const close = document.createElement('button');
   close.className = 'prc-popup-close';
@@ -190,6 +224,10 @@ const STYLES = `
     cursor: pointer; color: #9ca3af; padding: 0 2px; line-height: 1;
   }
   .prc-popup-close:hover { color: #374151; }
+  .prc-popup-above {
+    transform: translateY(-100%);
+    margin-top: -6px;
+  }
 
   .prc-fab {
     position: fixed; bottom: 24px; right: 24px; z-index: 9000;
@@ -263,6 +301,12 @@ const STYLES = `
   .prc-error { padding: 12px; background: #fef2f2; border-radius: 6px; color: #991b1b; font-size: 12px; }
   .prc-empty, .prc-no-pr { color: #6b7280; font-size: 12px; padding: 8px 0; }
   .prc-no-pr code { background: #f6f8fa; padding: 1px 4px; border-radius: 3px; font-family: monospace; font-size: 11px; }
+
+  @media (max-width: 480px) {
+    .prc-panel { width: 100vw; border-left: none; }
+    .prc-fab { bottom: 16px; right: 16px; width: 44px; height: 44px; }
+    .prc-popup { min-width: auto; width: calc(100vw - 16px); max-width: none; left: 8px !important; right: 8px !important; }
+  }
 `;
 
 let stylesInjected = false;
@@ -282,13 +326,25 @@ function renderRoot({ model, el }) {
   const file = model.get('file') ?? 'index.md';
   const pr = model.get('pr');
 
-  const fab = document.createElement('button');
+  // Guard against duplicate renders (e.g. on resize)
+  let fab = document.getElementById('prc-fab');
+  let panel = document.getElementById('prc-panel');
+  if (fab) {
+    // Just refresh the badge count if data is already loaded
+    const badge = fab.querySelector('.prc-fab-badge');
+    if (badge && badge.textContent === '…' && pr) badge.textContent = '0';
+    return;
+  }
+
+  fab = document.createElement('button');
+  fab.id = 'prc-fab';
   fab.className = 'prc-fab';
   fab.title = pr ? `PR #${pr} comments` : 'No PR configured';
   fab.innerHTML = `💬<span class="prc-fab-badge">${pr ? '…' : '?'}</span>`;
   document.body.appendChild(fab);
 
-  const panel = document.createElement('div');
+  panel = document.createElement('div');
+  panel.id = 'prc-panel';
   panel.className = 'prc-panel';
   const prLink = pr && repo
     ? `<a href="https://github.com/${esc(repo)}/pull/${esc(pr)}" target="_blank" rel="noopener">#${esc(pr)} ↗</a>`
@@ -339,11 +395,13 @@ function renderRoot({ model, el }) {
     const token = localStorage.getItem(TOKEN_KEY) || '';
     try {
       const data = await fetchPR(repo, pr, token);
-      const total = data.inline.length + data.reviews.length + data.issue.length;
+      // Filter out outdated comments (no longer in current PR diff)
+      const currentInline = data.inline.filter(c => c.position !== null);
+      const total = currentInline.length + data.reviews.length + data.issue.length;
       badge.textContent = String(total);
-      body.innerHTML = panelContent(data);
+      body.innerHTML = panelContent({ inline: currentInline, reviews: data.reviews, issue: data.issue });
       resolveAssignments(buildAssignments(
-        data.inline.filter(c => c.path === file),
+        currentInline.filter(c => c.path === file),
         anchorLines,
       ));
     } catch (err) {
@@ -362,9 +420,11 @@ function renderRoot({ model, el }) {
 }
 
 function renderAnchor({ model, el }) {
-  // .myst-anywidget host is display:contents by default (see pr-comments.css),
-  // so empty anchors take no block space. When comments arrive, override via
-  // inline style on whatever element we can reach outside the shadow root.
+  // Mark the host element so global CSS (e.g. mobile media query in
+  // pr-comments.css) can target it outside the shadow DOM.
+  const host = el.getRootNode().host;
+  if (host) host.classList.add('prc-anchor');
+
   const myLine = model.get('line');
   assignmentsReady.then(assignments => {
     const comments = assignments[myLine];
