@@ -66,7 +66,7 @@ const transform = {
 
     // Inject anchor widgets in reverse document order to preserve splice indices
     [...entries].sort((a, b) => b.line - a.line).forEach(({ parent, idx, line }) => {
-      parent.children.splice(idx+1, 0, {
+      parent.children.splice(idx, 0, {
         type: 'anywidget',
         esm: ESM,
         model: { type: 'anchor', line },
