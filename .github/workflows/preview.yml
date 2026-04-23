@@ -31,6 +31,8 @@ jobs:
       - name: Myst build
         run: myst build --html
         shell: micromamba-shell {0}
+        env:
+          PR_NUMBER: ${{ github.event.number }}
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3

@@ -1,0 +1,7 @@
+/* Anchor widgets are injected at every paragraph/heading position but are
+   empty by default. display:contents removes them from block layout entirely
+   so they don't add vertical gaps. Anchors with comments override this via
+   inline style to float:right. */
+.myst-anywidget {
+  display: contents;
+}

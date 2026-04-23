@@ -3,6 +3,10 @@ extends:
 - https://raw.githubusercontent.com/impact-scholars/impact-scholars.github.io/v0.1.0/nexus.yml
 - https://raw.githubusercontent.com/impact-scholars/isp-actions-config/v0.1.0/climatematch-2023.yml
 
+site:
+  options:
+    style: plugins/pr-comments.css
+
 project:
   plugins:
     - plugins/pr-comments.mjs

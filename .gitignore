@@ -25,3 +25,6 @@ Thumbs.db
 
 # PR comments data (regenerated via scripts/fetch-pr-comments.mjs)
 pr-comments-data.json
+
+# Agent workspace notes
+AGENTS.md
