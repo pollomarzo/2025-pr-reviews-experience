@@ -1,17 +1,19 @@
 version: 1
 extends:
 - https://raw.githubusercontent.com/impact-scholars/impact-scholars.github.io/v0.1.0/nexus.yml
-- https://raw.githubusercontent.com/impact-scholars/isp-actions-config/v0.1.0/isp-micropublication-2025.yml
+- https://raw.githubusercontent.com/impact-scholars/isp-actions-config/v0.1.0/climatematch-2023.yml
+
+site:
+  options:
+    style: plugins/pr-comments.css
 
 project:
-  # Uncomment and fill when published
-  # doi: 10.5281/zenodo.XXXXXXX
-  # date: YYYY-MM-DD
+  plugins:
+    - plugins/pr-comments.mjs
+  doi: 10.5281/zenodo.12206635
+  date: 2024-06-21
   authors:
-  - name: Doe, J.
-    orcid: 0000-0000-0000-0001
-    affiliations:
-    - Department of Geosciences and Natural Resource Management, University of Copenhagen, Denmark
+  - name: Franco Barrionuevo
     roles:
     - Conceptualization
     - Formal analysis
@@ -21,49 +23,45 @@ project:
     - Visualization
     - Writing - original draft
     - Writing - review & editing
-  - name: Sharma, A.J.
-    orcid: 0000-0000-0000-0002
-    affiliations:
-    - Department of Earth Sciences, Indian Institute of Technology Bombay, Mumbai, India
+  - name: Raphael Rocha
+    roles:
+    - Conceptualization
+    - Formal analysis
+    - Investigation
+    - Methodology
+    - Visualization
+    - Writing - original draft
+    - Writing - review & editing
+  - name: Luciana Rojas
     roles:
     - Formal analysis
     - Investigation
     - Writing - original draft
     - Writing - review & editing
-  - name: Tanaka, S.
-    affiliations:
-    - College of Urban and Environmental Sciences, Peking University, Beijing, China
+  - name: Ricardo Rengifo
+    roles:
+    - Formal analysis
+    - Investigation
+    - Writing - original draft
+    - Writing - review & editing
+  - name: Cristian Farfan
     roles:
     - Formal analysis
     - Writing - original draft
-    - Writing - review & editing
-  - name: Vera Gutierrez, C.
-    affiliations:
-    - Institute of Geology, Mining, and Metallurgy, Universidad Nacional Mayor de San Marcos, Lima, Peru
-    roles:
-    - Formal analysis
-    - Writing - original draft
-    - Writing - review & editing
-  - name: Ndlovu, T.
-    affiliations:
-    - Marine Research and Development, Oceanic Dynamics Ltd., Cape Town, South Africa
-    roles:
-    - Formal analysis
     - Writing - review & editing
 
   toc:
   - file: index.md
 
-  id: isp-micropublication-template
-  title: This is the title of our awesome micropublication
+  id: burned-area-argentina-patagonia
+  title: Latitudinal assessment of burned area in the Argentinian Andean-Patagonian Forest during 2001-2019 fire seasons
   keywords:
-  - keyword1
-  - keyword2
-  - keyword3
-  - keyword4
-  github: https://github.com/impact-scholars/isp-micropublication-template
+  - Argentinian Forest
+  - Satellite Imaging
+  - Conservation Strategies
+  github: https://github.com/impact-scholars/barrionuevo-2023-burned-area-patagonia
   bibliography:
   - bib.bib
-  # downloads:
-  # - file: supplementary-material.zip
-  #   title: Supplementary Material
+  downloads:
+  - file: CISP2024-Burned-Area-Argentinia-2001-2019-supp-material.zip
+    title: Supplementary Material

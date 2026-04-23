@@ -1,0 +1,12 @@
+.myst-anywidget {
+  position: relative;
+  height: 0px;
+  left: 100%;
+  width: fit-content;
+}
+
+@media (max-width: 480px) {
+  .myst-anywidget.prc-anchor {
+    display: none !important;
+  }
+}

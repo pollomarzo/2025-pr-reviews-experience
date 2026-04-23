@@ -1,0 +1,6 @@
+{
+  "_comment": "file = source file path (for build-time matching and GitHub API filtering); slug = deployed page URL slug (for fetching page JSON at runtime). If slug is omitted, it defaults to file with .md stripped.",
+  "repo": "pollomarzo/2025-pr-reviews-experience",
+  "file": "index.md",
+  "slug": "index"
+}
